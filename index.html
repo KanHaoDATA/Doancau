@@ -1,0 +1,162 @@
+<!DOCTYPE html><html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soi Cầu Tài Xỉu</title>
+  <style>
+    @keyframes glow {
+      0% { box-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00; }
+      50% { box-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
+      100% { box-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00; }
+    }body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #0a0a0a;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  background: #1c1c1c;
+  padding: 20px;
+  border-radius: 16px;
+  animation: glow 2s infinite ease-in-out;
+  text-align: center;
+  width: 90%;
+  max-width: 500px;
+  border: 3px solid #00ff00;
+}
+h2 {
+  color: #00ffe1;
+  margin-bottom: 20px;
+}
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+}
+button {
+  background-color: #00ffe1;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+.result {
+  margin-top: 20px;
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffeb3b;
+  text-shadow: 0 0 10px #ffeb3b;
+}
+.dice {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.die {
+  width: 60px;
+  height: 60px;
+  background-color: white;
+  color: black;
+  font-size: 32px;
+  font-weight: bold;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 10px #00ff00;
+  border: 2px solid #00ff00;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>@KanHaoDATA</h2>
+    <input type="text" id="input" placeholder="T,X,T,T,X,X...">
+    <button onclick="predict()">Dự Đoán</button>
+    <div class="result" id="output"></div>
+    <div class="dice" id="dice"></div>
+  </div>  <script>
+    function predict() {
+      const raw = document.getElementById('input').value;
+      const data = raw.toUpperCase().split(',').map(x => x.trim()).filter(x => x === 'T' || x === 'X');
+      const out = document.getElementById('output');
+      const diceEl = document.getElementById('dice');
+
+      if (data.length < 5) {
+        out.innerHTML = 'Nhập ít nhất 5 kết quả.';
+        diceEl.innerHTML = '';
+        return;
+      }
+
+      const last = data[data.length - 1];
+      const countT = data.filter(x => x === 'T').length;
+      const countX = data.filter(x => x === 'X').length;
+      const ratioT = countT / data.length;
+      const ratioX = countX / data.length;
+
+      let streak = 1;
+      for (let i = data.length - 2; i >= 0; i--) {
+        if (data[i] === last) streak++;
+        else break;
+      }
+
+      let isZigZag = true;
+      for (let i = 2; i < data.length; i++) {
+        if (data[i] !== data[i - 2]) {
+          isZigZag = false;
+          break;
+        }
+      }
+
+      const recent = data.slice(-6).join('');
+      const doublePattern = /(TTXX|XXTT)/.test(recent.slice(-4));
+      const triplePattern = /(TTTXXX|XXXT)/.test(recent);
+
+      let next = '';
+      if (streak >= 4) {
+        next = last;
+      } else if (isZigZag) {
+        next = last === 'T' ? 'X' : 'T';
+      } else if (triplePattern || doublePattern) {
+        next = last === 'T' ? 'X' : 'T';
+      } else if (ratioT > 0.7) {
+        next = 'X';
+      } else if (ratioX > 0.7) {
+        next = 'T';
+      } else {
+        next = last;
+      }
+
+      out.innerHTML = next === 'T' ? 'TÀI' : 'XỈU';
+
+      const validDiceCombos = [];
+      for (let i = 1; i <= 6; i++) {
+        for (let j = 1; j <= 6; j++) {
+          for (let k = 1; k <= 6; k++) {
+            const sum = i + j + k;
+            if ((next === 'T' && sum > 10) || (next === 'X' && sum <= 10)) {
+              validDiceCombos.push([i, j, k]);
+            }
+          }
+        }
+      }
+
+      const chosen = validDiceCombos[Math.floor(Math.random() * validDiceCombos.length)];
+
+      diceEl.innerHTML = `
+        <div class="die">${chosen[0]}</div>
+        <div class="die">${chosen[1]}</div>
+        <div class="die">${chosen[2]}</div>
+      `;
+    }
+  </script></body>
+</html>
